@@ -112,45 +112,81 @@ cfg = {
   },
   "agents": {
     "defaults": {
-      "model": "anthropic/claude-sonnet-4-6"
+      "model": {
+        "primary": "anthropic/claude-sonnet-4-6"
+      },
+      "workspace": os.path.expanduser("~/.openclaw/workspace"),
+      "contextPruning": {"mode": "cache-ttl", "ttl": "1h"},
+      "compaction": {"mode": "safeguard"},
+      "heartbeat": {"every": "5h"},
+      "maxConcurrent": 10
     },
     "list": [
-      {
-        "id": "main",
-        "name": "$AGENT_NAME",
-        "model": "anthropic/claude-sonnet-4-6",
-        "workspace": os.path.expanduser("~/.openclaw/workspace")
-      }
+      {"id": "main"}
     ]
+  },
+  "tools": {
+    "web": {"search": {"enabled": True}, "fetch": {"enabled": True}},
+    "exec": {"security": "full"}
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "bash": True,
+    "restart": True
+  },
+  "cron": {"enabled": True},
+  "web": {"enabled": True},
+  "plugins": {
+    "entries": {
+      "telegram": {"enabled": True}
+    }
   }
 }
 
-# plugins.entries must be a record (object), not an array
-entries = {}
-
-# Anthropic — goes inside plugin config
+# Anthropic API key — goes in auth.profiles
 if "$ANTHROPIC_API_KEY":
-    entries["anthropic"] = {
-        "enabled": True,
-        "config": {
-            "apiKey": "$ANTHROPIC_API_KEY"
+    cfg["auth"] = {
+        "profiles": {
+            "anthropic:default": {
+                "provider": "anthropic",
+                "mode": "api_key",
+                "apiKey": "$ANTHROPIC_API_KEY"
+            }
+        },
+        "order": {
+            "anthropic": ["anthropic:default"]
         }
     }
 
-# Telegram plugin
+# Telegram bot token — goes in channels.telegram.accounts
 if "$TELEGRAM_BOT_TOKEN":
-    telegram_cfg = {
-        "botToken": "$TELEGRAM_BOT_TOKEN"
+    account_cfg = {
+        "botToken": "$TELEGRAM_BOT_TOKEN",
+        "dmPolicy": "pairing",
+        "groupPolicy": "allowlist",
+        "streaming": "partial"
     }
-    if "$TELEGRAM_OWNER_ID":
-        telegram_cfg["allowedUsers"] = ["$TELEGRAM_OWNER_ID"]
-    entries["telegram"] = {
-        "enabled": True,
-        "config": telegram_cfg
+    owner_id = "$TELEGRAM_OWNER_ID"
+    cfg["channels"] = {
+        "telegram": {
+            "enabled": True,
+            "dmPolicy": "pairing",
+            "groupPolicy": "allowlist",
+            "accounts": {
+                "default": account_cfg
+            }
+        }
     }
-
-if entries:
-    cfg["plugins"] = {"entries": entries}
+    cfg["bindings"] = [
+        {"agentId": "main", "match": {"channel": "telegram", "accountId": "default"}}
+    ]
+    # Allow elevated tools from owner if owner ID provided
+    if owner_id:
+        cfg["tools"]["elevated"] = {
+            "enabled": True,
+            "allowFrom": {"telegram": [int(owner_id)]}
+        }
 
 with open("$OUT_DIR/openclaw.json", "w") as f:
     json.dump(cfg, f, indent=2)

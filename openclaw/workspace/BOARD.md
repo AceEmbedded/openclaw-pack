@@ -1,6 +1,6 @@
 # BOARD.md - Mission Control Task Board
 
-Your task board lives at: **{{MC_URL}}** (prod) or **http://127.0.0.1:3333** (local)
+Your task board lives at: **{{MC_URL}}** (prod)
 
 ## Agent Auth
 All API calls require a Bearer token header:

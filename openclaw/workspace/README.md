@@ -92,19 +92,6 @@ how to handle memory, when to speak in group chats, heartbeat behaviour, etc.
 
 ---
 
-## 🧑‍🤝‍🧑 TEAM.md — Team & Communication
-
-**What it does:** Defines the team structure, Telegram group IDs, tagging conventions.
-
-**What to change:**
-- Update with your actual team members and Telegram handles
-- Set the correct group chat ID for standup posts
-- Adjust standup schedule and format
-
-**Placeholders used:** None (edit freely, or add your own)
-
----
-
 ## Quick Reference
 
 | File | Priority | Edit? |
@@ -113,6 +100,5 @@ how to handle memory, when to speak in group chats, heartbeat behaviour, etc.
 | `USER.md` | ⭐ High | Yes — who they're working for |
 | `AGENTS.md` | Medium | Yes — workspace rules |
 | `HEARTBEAT.md` | Medium | Yes — what to check periodically |
-| `TEAM.md` | Medium | Yes — team structure |
 | `IDENTITY.md` | Low | Usually leave as-is |
 | `BOARD.md` | Low | Leave as-is (auto-configured) |

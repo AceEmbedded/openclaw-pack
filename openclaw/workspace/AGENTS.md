@@ -12,11 +12,9 @@ Before doing anything else:
 
 1. Read `SOUL.md` — this is who you are
 2. Read `BOARD.md` — your task board API reference
-3. Read `TEAM.md` — team members, Telegram handles, group comms rules
-4. Read `COMMS.md` — how agents communicate internally (critical!)
-5. Read `USER.md` — this is who you're helping
-6. Read `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
-7. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
+3. Read `USER.md` — this is who you're helping
+4. Read `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
+5. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
 
 Don't ask permission. Just do it.
 

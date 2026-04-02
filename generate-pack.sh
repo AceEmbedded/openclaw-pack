@@ -33,23 +33,14 @@ echo "   Source:  $OPENCLAW_DIR"
 echo "   Output:  $PACK_FILE"
 echo ""
 
-# ── Copy workspaces ───────────────────────────────────────────────────────────
-echo "📁 Copying workspaces..."
-for ws in workspace workspace-developer workspace-marketer workspace-pa; do
-  if [ -d "$OPENCLAW_DIR/$ws" ]; then
-    cp -r "$OPENCLAW_DIR/$ws" "$STAGING/$ws"
-    echo "   ✓ $ws"
-  fi
-done
-
-# Also copy any custom workspace-* directories
-for ws in "$OPENCLAW_DIR"/workspace-*; do
-  name=$(basename "$ws")
-  if [ ! -d "$STAGING/$name" ] && [ -d "$ws" ]; then
-    cp -r "$ws" "$STAGING/$name"
-    echo "   ✓ $name (custom)"
-  fi
-done
+# ── Copy main workspace only ──────────────────────────────────────────────────
+echo "📁 Copying main workspace..."
+if [ -d "$OPENCLAW_DIR/workspace" ]; then
+  cp -r "$OPENCLAW_DIR/workspace" "$STAGING/workspace"
+  echo "   ✓ workspace (main agent)"
+else
+  error "No workspace found at $OPENCLAW_DIR/workspace"
+fi
 
 # ── Copy config (sanitized) ───────────────────────────────────────────────────
 echo ""

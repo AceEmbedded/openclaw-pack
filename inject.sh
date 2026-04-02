@@ -144,19 +144,17 @@ echo ""
 info "Setting up $OPENCLAW_DIR..."
 mkdir -p "$OPENCLAW_DIR"
 
-# ── Copy workspaces ───────────────────────────────────────────────────────────
+# ── Copy main workspace ───────────────────────────────────────────────────────
 echo ""
-echo "📁 Installing workspaces..."
-for ws_src in "$PACK_DIR"/workspace*/; do
-  ws_name=$(basename "$ws_src")
-  ws_dst="$OPENCLAW_DIR/$ws_name"
-  if [ -d "$ws_dst" ] && [ "$FORCE" != "true" ]; then
-    warn "  $ws_name already exists — skipping (use --force to overwrite)"
-  else
-    cp -r "$ws_src" "$ws_dst"
-    success "$ws_name"
-  fi
-done
+echo "📁 Installing main workspace..."
+ws_src="$PACK_DIR/workspace"
+ws_dst="$OPENCLAW_DIR/workspace"
+if [ -d "$ws_dst" ] && [ "$FORCE" != "true" ]; then
+  warn "workspace already exists — skipping (use --force to overwrite)"
+else
+  cp -r "$ws_src" "$ws_dst"
+  success "workspace (main agent)"
+fi
 
 # ── Install cron jobs ─────────────────────────────────────────────────────────
 if [ -d "$PACK_DIR/cron" ]; then

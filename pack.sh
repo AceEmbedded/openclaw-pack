@@ -125,28 +125,32 @@ cfg = {
   }
 }
 
-# Add Anthropic provider if key set
+# plugins.entries must be a record (object), not an array
+entries = {}
+
+# Anthropic — goes inside plugin config
 if "$ANTHROPIC_API_KEY":
-    cfg["providers"] = {
-        "anthropic": {
+    entries["anthropic"] = {
+        "enabled": True,
+        "config": {
             "apiKey": "$ANTHROPIC_API_KEY"
         }
     }
 
-# Add Telegram plugin if token set
+# Telegram plugin
 if "$TELEGRAM_BOT_TOKEN":
-    cfg["plugins"] = {
-        "entries": [
-            {
-                "id": "telegram",
-                "enabled": True,
-                "config": {
-                    "botToken": "$TELEGRAM_BOT_TOKEN",
-                    "allowedUsers": ["$TELEGRAM_OWNER_ID"] if "$TELEGRAM_OWNER_ID" else []
-                }
-            }
-        ]
+    telegram_cfg = {
+        "botToken": "$TELEGRAM_BOT_TOKEN"
     }
+    if "$TELEGRAM_OWNER_ID":
+        telegram_cfg["allowedUsers"] = ["$TELEGRAM_OWNER_ID"]
+    entries["telegram"] = {
+        "enabled": True,
+        "config": telegram_cfg
+    }
+
+if entries:
+    cfg["plugins"] = {"entries": entries}
 
 with open("$OUT_DIR/openclaw.json", "w") as f:
     json.dump(cfg, f, indent=2)
@@ -164,16 +168,35 @@ set -euo pipefail
 
 JOBS_DIR="$(cd "$(dirname "$0")" && pwd)"
 TARGET="${HOME}/.openclaw"
+OPENCLAW_VERSION="2026.3.28"
 
 echo "🦞 Installing OpenClaw..."
 
-# Install openclaw if not present
-if ! command -v openclaw &>/dev/null; then
-  echo "  Installing openclaw..."
-  npm install -g openclaw || { echo "Install Node.js first: https://nodejs.org"; exit 1; }
+# Install Node.js if missing
+if ! command -v node &>/dev/null; then
+  echo "  Node.js not found. Install from https://nodejs.org then re-run."
+  exit 1
 fi
 
-echo "  Copying files to $TARGET..."
+# Install pinned openclaw version
+if command -v openclaw &>/dev/null; then
+  CURRENT=$(openclaw --version 2>/dev/null | awk '{print $2}' | head -1)
+  if [ "$CURRENT" != "$OPENCLAW_VERSION" ]; then
+    echo "  Updating openclaw to $OPENCLAW_VERSION..."
+    npm install -g "openclaw@${OPENCLAW_VERSION}" --silent
+  else
+    echo "  ✓ openclaw $OPENCLAW_VERSION already installed"
+  fi
+else
+  echo "  Installing openclaw $OPENCLAW_VERSION..."
+  npm install -g "openclaw@${OPENCLAW_VERSION}" --silent
+fi
+
+# Wipe existing ~/.openclaw and start fresh
+if [ -d "$TARGET" ]; then
+  echo "  Removing existing ~/.openclaw..."
+  rm -rf "$TARGET"
+fi
 mkdir -p "$TARGET"
 
 # Copy workspace
@@ -182,7 +205,7 @@ if [ -d "$JOBS_DIR/workspace" ]; then
   echo "  ✓ workspace"
 fi
 
-# Copy/merge openclaw.json
+# Copy openclaw.json
 if [ -f "$JOBS_DIR/openclaw.json" ]; then
   cp "$JOBS_DIR/openclaw.json" "$TARGET/openclaw.json"
   echo "  ✓ openclaw.json"

@@ -100,9 +100,13 @@ else
   ok "OpenClaw $OPENCLAW_VERSION installed"
 fi
 
-# ── Step 3: Create ~/.openclaw ────────────────────────────────────────────────
+# ── Step 3: Wipe and recreate ~/.openclaw ─────────────────────────────────────
 step "3. Setting up ~/.openclaw..."
 
+if [ -d "$OPENCLAW_DIR" ]; then
+  warn "Removing existing ~/.openclaw..."
+  rm -rf "$OPENCLAW_DIR"
+fi
 mkdir -p "$OPENCLAW_DIR"
 ok "Directory ready: $OPENCLAW_DIR"
 
@@ -110,10 +114,6 @@ ok "Directory ready: $OPENCLAW_DIR"
 step "4. Installing workspace..."
 
 if [ -d "$JOBS_DIR/workspace" ]; then
-  if [ -d "$OPENCLAW_DIR/workspace" ]; then
-    warn "workspace already exists — backing up to workspace.bak"
-    mv "$OPENCLAW_DIR/workspace" "$OPENCLAW_DIR/workspace.bak.$(date +%s)"
-  fi
   cp -r "$JOBS_DIR/workspace" "$OPENCLAW_DIR/workspace"
   ok "Workspace installed"
   
@@ -127,11 +127,6 @@ fi
 
 # ── Step 5: Install openclaw.json ─────────────────────────────────────────────
 step "5. Installing config..."
-
-if [ -f "$OPENCLAW_DIR/openclaw.json" ]; then
-  warn "openclaw.json already exists — backing up"
-  cp "$OPENCLAW_DIR/openclaw.json" "$OPENCLAW_DIR/openclaw.json.bak.$(date +%s)"
-fi
 
 cp "$JOBS_DIR/openclaw.json" "$OPENCLAW_DIR/openclaw.json"
 ok "openclaw.json installed"

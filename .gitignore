@@ -1,3 +1,4 @@
 .env
 jobs/
 *.zip
+.venv/

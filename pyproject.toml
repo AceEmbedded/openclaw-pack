@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "openclaw-pack"
+version = "0.1.0"
+description = "Portable OpenClaw setup with CollabAI OpenClaw bridge"
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = ">=0.100.0"
+uvicorn = { version = ">=0.23.0", extras = ["standard"] }
+httpx = ">=0.25.0"
+pydantic = ">=2.0.0"
+python-dotenv = ">=1.0.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

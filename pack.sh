@@ -144,20 +144,19 @@ cfg = {
   }
 }
 
-# Anthropic API key — goes in auth.profiles
-if "$ANTHROPIC_API_KEY":
-    cfg["auth"] = {
-        "profiles": {
-            "anthropic:default": {
-                "provider": "anthropic",
-                "mode": "api_key",
-                "apiKey": "$ANTHROPIC_API_KEY"
-            }
-        },
-        "order": {
-            "anthropic": ["anthropic:default"]
+# auth.profiles in openclaw.json is just metadata (no apiKey)
+# The actual key goes in agents/main/agent/auth-profiles.json
+cfg["auth"] = {
+    "profiles": {
+        "anthropic:default": {
+            "provider": "anthropic",
+            "mode": "api_key"
         }
+    },
+    "order": {
+        "anthropic": ["anthropic:default"]
     }
+} if "$ANTHROPIC_API_KEY" else {}
 
 # Telegram bot token — goes in channels.telegram.accounts
 if "$TELEGRAM_BOT_TOKEN":
@@ -190,8 +189,26 @@ if "$TELEGRAM_BOT_TOKEN":
 
 with open("$OUT_DIR/openclaw.json", "w") as f:
     json.dump(cfg, f, indent=2)
-
 print("  \033[0;32m✓ openclaw.json\033[0m")
+
+# Write auth-profiles.json (goes to ~/.openclaw/agents/main/agent/)
+if "$ANTHROPIC_API_KEY":
+    auth_profiles = {
+        "version": 1,
+        "profiles": {
+            "anthropic:default": {
+                "type": "api_key",
+                "provider": "anthropic",
+                "key": "$ANTHROPIC_API_KEY"
+            }
+        },
+        "lastGood": {"anthropic": "anthropic:default"},
+        "usageStats": {}
+    }
+    os.makedirs("$OUT_DIR/agents/main/agent", exist_ok=True)
+    with open("$OUT_DIR/agents/main/agent/auth-profiles.json", "w") as f:
+        json.dump(auth_profiles, f, indent=2)
+    print("  \033[0;32m✓ agents/main/agent/auth-profiles.json\033[0m")
 PYEOF
 
 # ── Write install.sh into jobs/ ───────────────────────────────────────────────
@@ -245,6 +262,12 @@ fi
 if [ -f "$JOBS_DIR/openclaw.json" ]; then
   cp "$JOBS_DIR/openclaw.json" "$TARGET/openclaw.json"
   echo "  ✓ openclaw.json"
+fi
+
+# Copy agent auth profiles (API keys)
+if [ -d "$JOBS_DIR/agents" ]; then
+  cp -r "$JOBS_DIR/agents" "$TARGET/agents"
+  echo "  ✓ agents (auth profiles)"
 fi
 
 echo ""

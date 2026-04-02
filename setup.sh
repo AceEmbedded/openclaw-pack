@@ -116,13 +116,15 @@ step "4. Installing workspace..."
 if [ -d "$JOBS_DIR/workspace" ]; then
   cp -r "$JOBS_DIR/workspace" "$OPENCLAW_DIR/workspace"
   ok "Workspace installed"
-  
-  # List installed files
-  for f in "$OPENCLAW_DIR/workspace/"*.md; do
-    echo "     $(basename "$f")"
-  done
+  for f in "$OPENCLAW_DIR/workspace/"*.md; do echo "     $(basename "$f")"; done
 else
   warn "No workspace folder found in jobs — skipping"
+fi
+
+# Copy agent auth profiles (API keys live here)
+if [ -d "$JOBS_DIR/agents" ]; then
+  cp -r "$JOBS_DIR/agents" "$OPENCLAW_DIR/agents"
+  ok "Agent auth profiles installed"
 fi
 
 # ── Step 5: Install openclaw.json ─────────────────────────────────────────────

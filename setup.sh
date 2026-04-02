@@ -84,13 +84,20 @@ fi
 # ── Step 2: OpenClaw CLI ──────────────────────────────────────────────────────
 step "2. Checking OpenClaw..."
 
+OPENCLAW_VERSION="2026.3.28"
+
 if command -v openclaw &>/dev/null; then
   OC_VER=$(openclaw --version 2>/dev/null | head -1 | awk '{print $2}' || echo "installed")
   ok "OpenClaw $OC_VER already installed"
+  if [ "$OC_VER" != "$OPENCLAW_VERSION" ]; then
+    warn "Version mismatch (have $OC_VER, pack built with $OPENCLAW_VERSION) — reinstalling pinned version..."
+    npm install -g "openclaw@${OPENCLAW_VERSION}" > /dev/null 2>&1
+    ok "OpenClaw $OPENCLAW_VERSION installed"
+  fi
 else
-  info "Installing OpenClaw..."
-  npm install -g openclaw > /dev/null 2>&1
-  ok "OpenClaw $(openclaw --version 2>/dev/null | head -1 | awk '{print $2}') installed"
+  info "Installing OpenClaw $OPENCLAW_VERSION..."
+  npm install -g "openclaw@${OPENCLAW_VERSION}" > /dev/null 2>&1
+  ok "OpenClaw $OPENCLAW_VERSION installed"
 fi
 
 # ── Step 3: Create ~/.openclaw ────────────────────────────────────────────────

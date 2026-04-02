@@ -1,93 +1,75 @@
 # openclaw-pack
 
-**Portable OpenClaw agent provisioner** — generate a zip from any OpenClaw machine and deploy it on a new machine with one command.
+Portable OpenClaw setup. Edit the files, fill in your `.env`, run `pack.sh` — get a ready-to-deploy `jobs/` folder.
 
 ## How it works
 
 ```
-[Old Machine]                         [New Machine]
-  ./generate-pack.sh                    unzip openclaw-pack-*.zip
-       │                                cd openclaw-pack-*/
-       ▼                                ./inject.sh
-  openclaw-pack-20260402.zip  ───────►  ~/.openclaw/ ready to go
+openclaw-pack/
+├── openclaw/workspace/    ← edit these (SOUL.md, AGENTS.md etc)
+├── .env.example           ← copy to .env, fill in tokens
+├── pack.sh                ← builds jobs/ from openclaw/ + .env
+└── jobs/                  ← generated output (gitignored), copy to ~/.openclaw
 ```
 
-## Generate a pack
-
-On the machine with a working OpenClaw setup:
+## Quick Start
 
 ```bash
+# 1. Clone the repo
 git clone https://github.com/AceEmbedded/openclaw-pack
 cd openclaw-pack
-chmod +x generate-pack.sh inject.sh
-./generate-pack.sh --name my-agent
+
+# 2. Set up your env
+cp .env.example .env
+# Edit .env — fill in your name, API keys, tokens
+
+# 3. Customise the agent (optional)
+# Edit openclaw/workspace/SOUL.md, USER.md, AGENTS.md etc
+
+# 4. Build
+chmod +x pack.sh
+./pack.sh
+
+# 5. Deploy on any machine
+# Copy jobs/ folder to the target machine, then:
+chmod +x jobs/install.sh
+./jobs/install.sh
+openclaw gateway start
 ```
 
-Output: `my-agent-pack-20260402-120000.zip`
+## .env variables
 
-## Deploy on a new machine
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `AGENT_NAME` | ✅ | Name of the AI agent |
+| `AGENT_EMOJI` | | Agent emoji (default: 🤖) |
+| `ORG_NAME` | | Organisation name |
+| `OWNER_NAME` | ✅ | Your name |
+| `OWNER_TIMEZONE` | | Your timezone (default: UTC) |
+| `ANTHROPIC_API_KEY` | | Anthropic API key |
+| `TELEGRAM_BOT_TOKEN` | | Telegram bot token |
+| `TELEGRAM_OWNER_ID` | | Your Telegram user ID |
+| `MC_URL` | | Mission Control URL |
+| `MC_AGENT_TOKEN` | | Mission Control agent token |
+| `GATEWAY_PORT` | | Gateway port (default: 18789) |
+| `GATEWAY_TOKEN` | | Gateway auth token (auto-generated if blank) |
 
-```bash
-# Install Node.js first if needed: https://nodejs.org
+## Customising the agent
 
-# Unzip and run
-unzip my-agent-pack-*.zip
-cd my-agent-pack-*/
-chmod +x inject.sh
-./inject.sh
-```
+Edit files in `openclaw/workspace/` before running `pack.sh`:
 
-The installer will prompt for any tokens it needs.
+- **SOUL.md** — agent personality and behaviour
+- **USER.md** — context about the owner
+- **IDENTITY.md** — agent name, emoji, org
+- **AGENTS.md** — how the agent should behave
+- **BOARD.md** — Mission Control task board config
+- **HEARTBEAT.md** — periodic tasks to check
 
-## Non-interactive deployment (CI/automation)
+Use `{{PLACEHOLDER}}` syntax — `pack.sh` replaces them from `.env`.
 
-Pass tokens as environment variables or flags:
+## jobs/ folder
 
-```bash
-OPENCLAW_PROVIDER_KEY="sk-ant-..." \
-OPENCLAW_TELEGRAM_TOKEN="123456:ABC..." \
-OPENCLAW_AGENT_TOKEN="mc_abc123..." \
-OPENCLAW_MC_URL="https://mc.yourcompany.com" \
-./inject.sh --no-start
-```
-
-Or use a `.env` file:
-
-```bash
-./inject.sh --env-file /path/to/.env
-```
-
-## What's in a pack
-
-| File | Description |
-|------|-------------|
-| `workspace/` | Falcon's workspace (SOUL.md, MEMORY.md, etc.) |
-| `workspace-developer/` | James's workspace |
-| `workspace-marketer/` | Jenny's workspace |
-| `openclaw.json.template` | Config with secrets redacted as `__REPLACE_ME__` |
-| `cron/` | Scheduled jobs (if any) |
-| `inject.sh` | Installer script |
-| `manifest.json` | Pack metadata |
-
-Secrets (API keys, tokens) are **never included** in the zip — inject.sh prompts for them at install time.
-
-## inject.sh options
-
-```
---openclaw-dir DIR       Target directory (default: ~/.openclaw)
---provider-key KEY       LLM API key (Anthropic/OpenAI etc.)
---telegram-token TOKEN   Telegram bot token
---gateway-token TOKEN    Gateway auth token (auto-generated if omitted)
---agent-token TOKEN      Mission Control agent token
---mc-url URL             Mission Control URL
---env-file FILE          Load tokens from .env file
---no-start               Don't auto-start the gateway
---force                  Overwrite existing files
-```
-
-## generate-pack.sh options
-
-```
---output DIR    Output directory for the zip (default: current dir)
---name NAME     Pack name prefix (default: openclaw)
-```
+`pack.sh` generates `jobs/` (gitignored) containing:
+- `workspace/` — personalised workspace files ready for `~/.openclaw/workspace/`
+- `openclaw.json` — fully configured gateway + providers
+- `install.sh` — one-command installer for the target machine

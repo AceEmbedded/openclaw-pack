@@ -14,28 +14,36 @@ openclaw-pack/
 
 ## Quick Start
 
+### On your machine (build the pack)
+
 ```bash
 # 1. Clone the repo
 git clone https://github.com/AceEmbedded/openclaw-pack
 cd openclaw-pack
 
-# 2. Set up your env
+# 2. Fill in your tokens
 cp .env.example .env
-# Edit .env — fill in your name, API keys, tokens
+nano .env   # add API key, Telegram token, etc.
 
-# 3. Customise the agent (optional)
-# Edit openclaw/workspace/SOUL.md, USER.md, AGENTS.md etc
+# 3. Customise your agent (optional)
+# See openclaw/workspace/README.md for what to edit
+nano openclaw/workspace/SOUL.md
+nano openclaw/workspace/USER.md
 
-# 4. Build
+# 4. Build — generates jobs/ folder
 chmod +x pack.sh
 ./pack.sh
-
-# 5. Deploy on any machine
-# Copy jobs/ folder to the target machine, then:
-chmod +x jobs/install.sh
-./jobs/install.sh
-openclaw gateway start
 ```
+
+### On any new machine (deploy)
+
+```bash
+# Copy jobs/ folder to the new machine, then run:
+chmod +x setup.sh
+./setup.sh ./jobs
+```
+
+That's it. `setup.sh` installs Node.js + OpenClaw, copies config and workspace, and starts the gateway.
 
 ## .env variables
 
